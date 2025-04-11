@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { DecksResponse } from "./models.js";
+import { DecksResponse, Card } from "./models.js";
+import { z } from "zod";
 
 // TODO: Get these from the .env file
 const OWL_API_KEY = "owl-bf00d3718a903550172bea7d4d5a0cc8b4f706b4380cfcfc45d4fd6f6d2e";
@@ -59,6 +60,48 @@ server.tool("get-decks", "Get a list of decks from the user's account", {}, asyn
     ],
   };
 });
+
+server.tool(
+  "get-deck-cards",
+  "Get a list of cards from a specific deck",
+  {
+    deck_id: z.string().describe("The ID of the deck to get cards from"),
+  },
+  async ({ deck_id }) => {
+    const cardsUrl = `${OWL_API_URL}/decks/${deck_id}/cards`;
+    const cardsData = await makeOwlRequest<Card[]>(cardsUrl);
+
+    if (!cardsData) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to retrieve cards from deck ${deck_id}.`,
+          },
+        ],
+      };
+    }
+
+    const cardsText = cardsData
+      .map((card) => {
+        const cardType = card.type === "BasicCard" ? "Basic" : "Cloze";
+        const state = card.state.charAt(0).toUpperCase() + card.state.slice(1);
+        return `${cardType} Card (ID: ${card.id})\nFront: ${card.type === "BasicCard" ? card.front : card.text}\nState: ${state}\nStability: ${card.stability}\nDifficulty: ${card.difficulty}\nReps: ${
+          card.reps
+        }\nLapses: ${card.lapses}\nLast Reviewed: ${card.last_reviewed_at || "Never"}\nNext Review: ${card.next_review_at || "Not scheduled"}\n`;
+      })
+      .join("\n");
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: cardsText,
+        },
+      ],
+    };
+  }
+);
 
 async function main() {
   const transport = new StdioServerTransport();
