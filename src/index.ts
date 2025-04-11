@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { DecksResponse, Card } from "./models.js";
+import { DecksResponse, Card, Deck } from "./models.js";
+import { CreateDeckInput } from "./api.js";
 import { z } from "zod";
 
 // TODO: Get these from the .env file
@@ -16,14 +17,18 @@ const server = new McpServer({
   },
 });
 
-async function makeOwlRequest<T>(url: string): Promise<T | null> {
+async function makeOwlRequest<T>(url: string, method: string = "GET", body?: any): Promise<T | null> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-API-Key": OWL_API_KEY,
   };
 
   try {
-    const response = await fetch(url, { headers });
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -97,6 +102,58 @@ server.tool(
         {
           type: "text",
           text: cardsText,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "create-deck",
+  "Create a new deck with optional cards",
+  {
+    title: z.string().describe("The title of the deck"),
+    description: z.string().describe("A description of the deck"),
+    public: z.boolean().optional().describe("Whether the deck should be public"),
+    cards: z
+      .array(
+        z.object({
+          type: z.enum(["BasicCard", "ClozeCard"]),
+          front: z.string().optional(),
+          back: z.string().optional(),
+          text: z.string().optional(),
+        })
+      )
+      .optional()
+      .describe("Optional array of cards to add to the deck"),
+  },
+  async ({ title, description, public: isPublic, cards }) => {
+    const deckInput: CreateDeckInput = {
+      title,
+      description,
+      public: isPublic,
+      cards,
+    };
+
+    const deckUrl = `${OWL_API_URL}/decks`;
+    const deckData = await makeOwlRequest<Deck>(deckUrl, "POST", deckInput);
+
+    if (!deckData) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to create deck "${title}".`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully created deck "${deckData.title}" with ID ${deckData.id}.`,
         },
       ],
     };
