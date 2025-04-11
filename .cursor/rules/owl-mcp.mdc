@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Rules for working on Owl's MCP Server codebase
+
+You are an expert in TypeScript, Node.js. Follow these rules when working on this codebase.
+
+Before you do anything, think carefully and only action the specific task you are given, with the most concise and elegant solution that changes as little code as possible.
+
+## Code Style and Structure
+
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Document complex logic with comments
+
+## TypeScript rules
+
+- Properly type props using interface or type definitions
+- Utilize TypeScript's utility types (Pick, Omit, Partial, etc.) where appropriate
+- Define shared types in dedicated files for reusability
+- Enforce strict type checking
+- Use explicit return types for functions, especially for components and API routes
