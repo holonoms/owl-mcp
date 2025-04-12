@@ -1,4 +1,4 @@
-# How to run the Owl MCP server (typescript edition)
+# How to run the Owl MCP server
 
 Keep in mind that this needs an API key. Get one of from Owl first. Then do this:
 
