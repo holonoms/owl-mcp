@@ -1,6 +1,14 @@
 # How to run the Owl MCP server (typescript edition)
 
-Update your claude mcp configuration:
+Keep in mind that this needs an API key. Get one of from Owl first. Then do this:
+
+Build the project:
+
+```bash
+pnpm run build
+```
+
+Update your claude desktop configuration. Make sure the args point to the built file, and that Claude can run the node executable.
 
 ```json
 {
@@ -13,6 +21,4 @@ Update your claude mcp configuration:
 }
 ```
 
-## TODO
-
-- Grab env vars from .env file
+Let Claude cook!
