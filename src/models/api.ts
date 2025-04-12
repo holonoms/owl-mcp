@@ -1,4 +1,4 @@
-import { BasicCard, ClozeCard, DeckId } from "./models.js";
+import { BasicCard, ClozeCard, Deck, DeckId } from "./models.js";
 
 export interface CreateBasicCardInput {
   deck_id: DeckId;
@@ -13,6 +13,11 @@ export interface CreateClozeCardInput {
   text: string;
 }
 
+export type CreateMultipleCardsInput = {
+  deck_id: DeckId;
+  cards: Omit<CreateCardInput, "deck_id">[];
+};
+
 export type CreateCardInput = CreateBasicCardInput | CreateClozeCardInput;
 
 export interface CreateDeckInput {
@@ -20,4 +25,14 @@ export interface CreateDeckInput {
   description: string;
   public?: boolean;
   cards?: Array<Omit<CreateCardInput, "deck_id">>;
+}
+
+export interface DecksResponse {
+  items: Deck[];
+  pagination: {
+    current_page: number;
+    per_page: number;
+    total_pages: number;
+    total_count: number;
+  };
 }

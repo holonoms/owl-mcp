@@ -1,8 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { DecksResponse, Card, Deck } from "./models.js";
-import { CreateDeckInput } from "./api.js";
 import { z } from "zod";
+
+import { CreateCardInput, CreateDeckInput, DecksResponse } from "./models/api.js";
+import { Card, Deck } from "./models/models.js";
 
 // TODO: Get these from the .env file
 const OWL_API_KEY = "owl-bf00d3718a903550172bea7d4d5a0cc8b4f706b4380cfcfc45d4fd6f6d2e";
@@ -17,7 +18,7 @@ const server = new McpServer({
   },
 });
 
-async function makeOwlRequest<T>(url: string, method: string = "GET", body?: any): Promise<T | null> {
+async function makeOwlRequest<T>(url: string, method: string = "GET", body?: unknown): Promise<T | null> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-API-Key": OWL_API_KEY,
@@ -29,15 +30,21 @@ async function makeOwlRequest<T>(url: string, method: string = "GET", body?: any
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
-    return (await response.json()) as T;
+
+    const data = await response.json();
+    return data as T;
   } catch (error) {
-    console.error("Error making request to the Owl API:", error);
+    console.error("Error making request to the Owl API:", error instanceof Error ? error.message : String(error));
     return null;
   }
 }
+
+// MARK: Tools
 
 server.tool("get-decks", "Get a list of decks from the user's account", {}, async () => {
   const decksUrl = `${OWL_API_URL}/decks`;
@@ -154,6 +161,44 @@ server.tool(
         {
           type: "text",
           text: `Successfully created deck "${deckData.title}" with ID ${deckData.id}.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "create-card",
+  "Create a new card in a specific deck",
+  {
+    deck_id: z.string().describe("The ID of the deck to add the card to"),
+    type: z.enum(["BasicCard", "ClozeCard"]).describe("The type of card to create"),
+    front: z.string().optional().describe("The front text for a basic card"),
+    back: z.string().optional().describe("The back text for a basic card"),
+    text: z.string().optional().describe("The text for a cloze card"),
+  },
+  async ({ deck_id, type, front, back, text }) => {
+    const cardInput: CreateCardInput = type === "BasicCard" ? { deck_id, type, front: front!, back: back! } : { deck_id, type, text: text! };
+
+    const cardUrl = `${OWL_API_URL}/decks/${deck_id}/cards`;
+    const cardData = await makeOwlRequest<Card>(cardUrl, "POST", cardInput);
+
+    if (!cardData) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to create card in deck ${deck_id}.`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully created ${type} in deck ${deck_id} with ID ${cardData.id}.`,
         },
       ],
     };

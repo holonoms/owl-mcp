@@ -15,16 +15,6 @@ export interface Deck {
   completion_percentage: number;
 }
 
-export interface DecksResponse {
-  items: Deck[];
-  pagination: {
-    current_page: number;
-    per_page: number;
-    total_pages: number;
-    total_count: number;
-  };
-}
-
 export type CardId = string;
 interface BaseCard {
   id: CardId;
