@@ -2,8 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { CreateCardInput, CreateDeckInput, DecksResponse } from "./models/api.js";
 import { Card, Deck } from "./models/models.js";
+import { CreateCardInput, CreateDeckInput, CreateMultipleCardsInput, DecksResponse } from "./models/api.js";
 
 // TODO: Get these from the .env file
 const OWL_API_KEY = "owl-bf00d3718a903550172bea7d4d5a0cc8b4f706b4380cfcfc45d4fd6f6d2e";
@@ -199,6 +199,50 @@ server.tool(
         {
           type: "text",
           text: `Successfully created ${type} in deck ${deck_id} with ID ${cardData.id}.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "create-cards",
+  "Create multiple cards in a specific deck",
+  {
+    deck_id: z.string().describe("The ID of the deck to add the cards to"),
+    cards: z
+      .array(
+        z.object({
+          type: z.enum(["BasicCard", "ClozeCard"]).describe("The type of card to create"),
+          front: z.string().optional().describe("The front text for a basic card"),
+          back: z.string().optional().describe("The back text for a basic card"),
+          text: z.string().optional().describe("The text for a cloze card"),
+        })
+      )
+      .describe("Array of cards to create"),
+  },
+  async ({ deck_id, cards }) => {
+    const cardsInput: CreateMultipleCardsInput = { deck_id, cards };
+
+    const cardsUrl = `${OWL_API_URL}/decks/${deck_id}/cards/batch`;
+    const cardsData = await makeOwlRequest<Card[]>(cardsUrl, "POST", cardsInput);
+
+    if (!cardsData) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to create cards in deck ${deck_id}.`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully created ${cardsData.length} cards in deck ${deck_id}.`,
         },
       ],
     };
