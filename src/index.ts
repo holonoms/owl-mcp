@@ -1,13 +1,33 @@
+import { config } from "dotenv";
+
+// Try .env then .env.local (latter overrides former)
+config();
+config({ path: ".env.local" });
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
 import { Card, Deck } from "./models/models.js";
-import { CreateCardInput, CreateDeckInput, CreateMultipleCardsInput, DecksResponse } from "./models/api.js";
+import {
+  CreateCardInput,
+  CreateDeckInput,
+  CreateMultipleCardsInput,
+  DecksResponse,
+} from "./models/api.js";
 
-// TODO: Get these from the .env file
-const OWL_API_KEY = "owl-bf00d3718a903550172bea7d4d5a0cc8b4f706b4380cfcfc45d4fd6f6d2e";
-const OWL_API_URL = "http://localhost:3000";
+const OWL_API_KEY = process.env.OWL_API_KEY;
+const OWL_API_URL = process.env.OWL_API_URL;
+
+if (!OWL_API_KEY || !OWL_API_URL) {
+  throw new Error(
+    "Missing required environment variables: OWL_API_KEY and/or OWL_API_URL"
+  );
+}
+
+// After the check above, we know these are strings
+const apiKey: string = OWL_API_KEY;
+const apiUrl: string = OWL_API_URL;
 
 const server = new McpServer({
   name: "owl",
@@ -18,10 +38,14 @@ const server = new McpServer({
   },
 });
 
-async function makeOwlRequest<T>(url: string, method: string = "GET", body?: unknown): Promise<T | null> {
+async function makeOwlRequest<T>(
+  url: string,
+  method: string = "GET",
+  body?: unknown
+): Promise<T | null> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-API-Key": OWL_API_KEY,
+    "X-API-Key": apiKey,
   };
 
   try {
@@ -33,45 +57,60 @@ async function makeOwlRequest<T>(url: string, method: string = "GET", body?: unk
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
     }
 
     const data = await response.json();
     return data as T;
   } catch (error) {
-    console.error("Error making request to the Owl API:", error instanceof Error ? error.message : String(error));
+    console.error(
+      "Error making request to the Owl API:",
+      error instanceof Error ? error.message : String(error)
+    );
     return null;
   }
 }
 
 // MARK: Tools
 
-server.tool("get-decks", "Get a list of decks from the user's account", {}, async () => {
-  const decksUrl = `${OWL_API_URL}/decks`;
-  const decksData = await makeOwlRequest<DecksResponse>(decksUrl);
+server.tool(
+  "get-decks",
+  "Get a list of decks from the user's account",
+  {},
+  async () => {
+    const decksUrl = `${apiUrl}/decks`;
+    const decksData = await makeOwlRequest<DecksResponse>(decksUrl);
 
-  if (!decksData) {
+    if (!decksData) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to retrieve decks from the user's account.`,
+          },
+        ],
+      };
+    }
+
+    const deckText = decksData.items
+      .map(
+        (deck) =>
+          `${deck.title} (ID: ${deck.id}, ${deck.cards_count} cards, ${deck.completion_percentage}% complete)`
+      )
+      .join("\n");
+
     return {
       content: [
         {
           type: "text",
-          text: `Failed to retrieve decks from the user's account.`,
+          text: deckText,
         },
       ],
     };
   }
-
-  const deckText = decksData.items.map((deck) => `${deck.title} (ID: ${deck.id}, ${deck.cards_count} cards, ${deck.completion_percentage}% complete)`).join("\n");
-
-  return {
-    content: [
-      {
-        type: "text",
-        text: deckText,
-      },
-    ],
-  };
-});
+);
 
 server.tool(
   "get-deck-cards",
@@ -80,7 +119,7 @@ server.tool(
     deck_id: z.string().describe("The ID of the deck to get cards from"),
   },
   async ({ deck_id }) => {
-    const cardsUrl = `${OWL_API_URL}/decks/${deck_id}/cards`;
+    const cardsUrl = `${apiUrl}/decks/${deck_id}/cards`;
     const cardsData = await makeOwlRequest<Card[]>(cardsUrl);
 
     if (!cardsData) {
@@ -98,9 +137,13 @@ server.tool(
       .map((card) => {
         const cardType = card.type === "BasicCard" ? "Basic" : "Cloze";
         const state = card.state.charAt(0).toUpperCase() + card.state.slice(1);
-        return `${cardType} Card (ID: ${card.id})\nFront: ${card.type === "BasicCard" ? card.front : card.text}\nState: ${state}\nStability: ${card.stability}\nDifficulty: ${card.difficulty}\nReps: ${
-          card.reps
-        }\nLapses: ${card.lapses}\nLast Reviewed: ${card.last_reviewed_at || "Never"}\nNext Review: ${card.next_review_at || "Not scheduled"}\n`;
+        return `${cardType} Card (ID: ${card.id})\nFront: ${
+          card.type === "BasicCard" ? card.front : card.text
+        }\nState: ${state}\nStability: ${card.stability}\nDifficulty: ${
+          card.difficulty
+        }\nReps: ${card.reps}\nLapses: ${card.lapses}\nLast Reviewed: ${
+          card.last_reviewed_at || "Never"
+        }\nNext Review: ${card.next_review_at || "Not scheduled"}\n`;
       })
       .join("\n");
 
@@ -121,7 +164,10 @@ server.tool(
   {
     title: z.string().describe("The title of the deck"),
     description: z.string().describe("A description of the deck"),
-    public: z.boolean().optional().describe("Whether the deck should be public"),
+    public: z
+      .boolean()
+      .optional()
+      .describe("Whether the deck should be public"),
     cards: z
       .array(
         z.object({
@@ -142,7 +188,7 @@ server.tool(
       cards,
     };
 
-    const deckUrl = `${OWL_API_URL}/decks`;
+    const deckUrl = `${apiUrl}/decks`;
     const deckData = await makeOwlRequest<Deck>(deckUrl, "POST", deckInput);
 
     if (!deckData) {
@@ -172,15 +218,20 @@ server.tool(
   "Create a new card in a specific deck",
   {
     deck_id: z.string().describe("The ID of the deck to add the card to"),
-    type: z.enum(["BasicCard", "ClozeCard"]).describe("The type of card to create"),
+    type: z
+      .enum(["BasicCard", "ClozeCard"])
+      .describe("The type of card to create"),
     front: z.string().optional().describe("The front text for a basic card"),
     back: z.string().optional().describe("The back text for a basic card"),
     text: z.string().optional().describe("The text for a cloze card"),
   },
   async ({ deck_id, type, front, back, text }) => {
-    const cardInput: CreateCardInput = type === "BasicCard" ? { deck_id, type, front: front!, back: back! } : { deck_id, type, text: text! };
+    const cardInput: CreateCardInput =
+      type === "BasicCard"
+        ? { deck_id, type, front: front!, back: back! }
+        : { deck_id, type, text: text! };
 
-    const cardUrl = `${OWL_API_URL}/decks/${deck_id}/cards`;
+    const cardUrl = `${apiUrl}/decks/${deck_id}/cards`;
     const cardData = await makeOwlRequest<Card>(cardUrl, "POST", cardInput);
 
     if (!cardData) {
@@ -213,9 +264,17 @@ server.tool(
     cards: z
       .array(
         z.object({
-          type: z.enum(["BasicCard", "ClozeCard"]).describe("The type of card to create"),
-          front: z.string().optional().describe("The front text for a basic card"),
-          back: z.string().optional().describe("The back text for a basic card"),
+          type: z
+            .enum(["BasicCard", "ClozeCard"])
+            .describe("The type of card to create"),
+          front: z
+            .string()
+            .optional()
+            .describe("The front text for a basic card"),
+          back: z
+            .string()
+            .optional()
+            .describe("The back text for a basic card"),
           text: z.string().optional().describe("The text for a cloze card"),
         })
       )
@@ -224,8 +283,12 @@ server.tool(
   async ({ deck_id, cards }) => {
     const cardsInput: CreateMultipleCardsInput = { deck_id, cards };
 
-    const cardsUrl = `${OWL_API_URL}/decks/${deck_id}/cards/batch`;
-    const cardsData = await makeOwlRequest<Card[]>(cardsUrl, "POST", cardsInput);
+    const cardsUrl = `${apiUrl}/decks/${deck_id}/cards/batch`;
+    const cardsData = await makeOwlRequest<Card[]>(
+      cardsUrl,
+      "POST",
+      cardsInput
+    );
 
     if (!cardsData) {
       return {
