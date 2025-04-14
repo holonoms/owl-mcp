@@ -83,3 +83,7 @@ export const UpdateDeckSchema = z.object({
   description: z.string().optional().describe("A new description of the deck"),
   public: z.boolean().optional().describe("Whether the deck should be public"),
 });
+
+export const ArchiveSchema = z
+  .boolean()
+  .describe("Whether to archive (true) or unarchive (false) the item");

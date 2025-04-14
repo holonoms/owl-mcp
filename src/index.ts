@@ -11,6 +11,8 @@ import { updateCardTool as setupUpdateCardTool } from "./tools/update-card.js";
 import { setupUpdateDeckTool } from "./tools/update-deck.js";
 import { setupDeleteCardTool } from "./tools/delete-card.js";
 import { setupDeleteDeckTool } from "./tools/delete-deck.js";
+import { setupDeckArchivalTool as setupArchiveDeckTool } from "./tools/set-deck-archived.js";
+import { setupCardArchivalTool as setupArchiveCardTool } from "./tools/set-card-archived.js";
 
 async function main() {
   const apiKey = process.env.OWL_API_KEY;
@@ -36,10 +38,12 @@ async function main() {
   setupCreateDeckTool(client, server);
   setupUpdateDeckTool(client, server);
   setupDeleteDeckTool(client, server);
+  setupArchiveDeckTool(client, server);
   setupCreateCardTool(client, server);
   setupCreateCardsTool(client, server);
   setupUpdateCardTool(client, server);
   setupDeleteCardTool(client, server);
+  setupArchiveCardTool(client, server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
