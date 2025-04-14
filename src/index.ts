@@ -7,7 +7,7 @@ import { setupCreateCardsTool } from "./tools/create-cards.js";
 import { setupCreateDeckTool } from "./tools/create-deck.js";
 import { setupGetDeckCardsTool } from "./tools/get-deck-cards.js";
 import { setupGetDecksTool } from "./tools/get-decks.js";
-import { updateCardTool as setupUpdateCardTool } from "./tools/update-card.js";
+import { setupUpdateCardTool as setupUpdateCardTool } from "./tools/update-card.js";
 import { setupUpdateDeckTool } from "./tools/update-deck.js";
 import { setupDeleteCardTool } from "./tools/delete-card.js";
 import { setupDeleteDeckTool } from "./tools/delete-deck.js";
@@ -33,17 +33,23 @@ async function main() {
     },
   });
 
-  setupGetDecksTool(client, server);
-  setupGetDeckCardsTool(client, server);
-  setupCreateDeckTool(client, server);
-  setupUpdateDeckTool(client, server);
-  setupDeleteDeckTool(client, server);
-  setupArchiveDeckTool(client, server);
-  setupCreateCardTool(client, server);
-  setupCreateCardsTool(client, server);
-  setupUpdateCardTool(client, server);
-  setupDeleteCardTool(client, server);
-  setupArchiveCardTool(client, server);
+  const tools = [
+    setupGetDecksTool,
+    setupGetDeckCardsTool,
+    setupCreateDeckTool,
+    setupUpdateDeckTool,
+    setupDeleteDeckTool,
+    setupArchiveDeckTool,
+    setupCreateCardTool,
+    setupCreateCardsTool,
+    setupUpdateCardTool,
+    setupDeleteCardTool,
+    setupArchiveCardTool,
+  ];
+
+  for (const tool of tools) {
+    tool(client, server);
+  }
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
