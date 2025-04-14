@@ -7,6 +7,8 @@ import { setupCreateCardsTool } from "./tools/create-cards.js";
 import { setupCreateDeckTool } from "./tools/create-deck.js";
 import { setupGetDeckCardsTool } from "./tools/get-deck-cards.js";
 import { setupGetDecksTool } from "./tools/get-decks.js";
+import { setupStartStudySessionTool } from "./tools/start-study-session.js";
+import { setupSubmitCardReviewTool } from "./tools/submit-card-review.js";
 
 async function main() {
   const apiKey = process.env.OWL_API_KEY;
@@ -32,6 +34,8 @@ async function main() {
   setupCreateDeckTool(client, server);
   setupCreateCardTool(client, server);
   setupCreateCardsTool(client, server);
+  setupStartStudySessionTool(client, server);
+  setupSubmitCardReviewTool(client, server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
