@@ -1,10 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Card } from "../models/models.js";
+import { OwlClient } from "../owl-client.js";
+import { err, text } from "./content.js";
 import { CardIdSchema, DeckIdSchema, UpdateCardSchema } from "./schema.js";
-import { OwlClient, OwlError } from "../owl-client.js";
-import { err, owlErr, text } from "./content.js";
 
-export async function setupEditCardTool(client: OwlClient, server: McpServer) {
+export async function updateCardTool(client: OwlClient, server: McpServer) {
   server.tool(
     "edit-card",
     "Edit an existing card in a specific deck.",

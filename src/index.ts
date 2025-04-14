@@ -5,9 +5,10 @@ import { OwlClient } from "./owl-client.js";
 import { setupCreateCardTool } from "./tools/create-card.js";
 import { setupCreateCardsTool } from "./tools/create-cards.js";
 import { setupCreateDeckTool } from "./tools/create-deck.js";
-import { setupEditCardTool } from "./tools/edit-card.js";
 import { setupGetDeckCardsTool } from "./tools/get-deck-cards.js";
 import { setupGetDecksTool } from "./tools/get-decks.js";
+import { updateCardTool as setupUpdateCardTool } from "./tools/update-card.js";
+import { setupUpdateDeckTool } from "./tools/update-deck.js";
 
 async function main() {
   const apiKey = process.env.OWL_API_KEY;
@@ -33,7 +34,8 @@ async function main() {
   setupCreateDeckTool(client, server);
   setupCreateCardTool(client, server);
   setupCreateCardsTool(client, server);
-  setupEditCardTool(client, server);
+  setupUpdateCardTool(client, server);
+  setupUpdateDeckTool(client, server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

@@ -35,5 +35,4 @@
 - Un/Archive deck
 - Delete card
 - Delete deck
-- Edit deck details
 - Stats

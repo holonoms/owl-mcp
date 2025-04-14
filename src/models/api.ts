@@ -63,3 +63,9 @@ export interface CreateDeckInput {
   public?: boolean;
   cards?: Array<Omit<CreateCardInput, "deck_id">>;
 }
+
+export interface UpdateDeckInput {
+  title?: string;
+  description?: string;
+  public?: boolean;
+}

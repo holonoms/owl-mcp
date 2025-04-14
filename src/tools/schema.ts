@@ -1,15 +1,5 @@
 import { z } from "zod";
 
-export const CardIdSchema = z
-  .string()
-  .describe("The ID of the card for this tool call.");
-
-export const DeckIdSchema = z
-  .string()
-  .describe(
-    "The ID of the deck for this tool call. If this is not clear, ask the user (understanding the user will give you an approximate name of the deck, rather than its ID)"
-  );
-
 export const CursorSchema = z.object({
   page: z
     .number()
@@ -30,6 +20,10 @@ export const CursorSchema = z.object({
       "Sorting criteria. Can be a single string or an array of strings representing model fields. For descending order, prefix field with - (e.g. '-created_at'). Should not be set unless there's explicit user intent to sort differently from default."
     ),
 });
+
+export const CardIdSchema = z
+  .string()
+  .describe("The ID of the card for this tool call.");
 
 export const CreateCardSchema = z.object({
   type: z
@@ -68,6 +62,12 @@ export const UpdateCardSchema = z.object({
     ),
 });
 
+export const DeckIdSchema = z
+  .string()
+  .describe(
+    "The ID of the deck for this tool call. If this is not clear, ask the user (understanding the user will give you an approximate name of the deck, rather than its ID)"
+  );
+
 export const CreateDeckSchema = z.object({
   title: z.string().describe("The title of the deck"),
   description: z.string().describe("A description of the deck"),
@@ -76,4 +76,10 @@ export const CreateDeckSchema = z.object({
     .array(CreateCardSchema)
     .optional()
     .describe("Optional array of cards to add to the deck"),
+});
+
+export const UpdateDeckSchema = z.object({
+  title: z.string().optional().describe("The new title of the deck"),
+  description: z.string().optional().describe("A new description of the deck"),
+  public: z.boolean().optional().describe("Whether the deck should be public"),
 });
