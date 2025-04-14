@@ -1,3 +1,4 @@
+import { PaginationMeta } from "./api.js";
 import { BasicCard, Card, ClozeCard, Deck } from "./models.js";
 
 export function renderDeckList(decks: Deck[]): string {
@@ -5,7 +6,8 @@ export function renderDeckList(decks: Deck[]): string {
 }
 
 export function renderDeckMeta(deck: Deck): string {
-  return `${deck.title} (ID: ${deck.id}, ${deck.cards_count} cards, ${deck.completion_percentage}% learned)`;
+  const completionPct = Math.round(deck.completion_percentage);
+  return `${deck.title} (ID: ${deck.id}, ${deck.cards_count} cards, ${completionPct}% learned)`;
 }
 
 export function renderCardList(cards: Card[]): string {
@@ -19,9 +21,16 @@ export function renderCard(card: Card): string {
 }
 
 function renderBasicCard(card: BasicCard): string {
-  return `Basic Card (ID: ${card.id})\nFront: '${card.front}'\nBack: '${card.back}'`;
+  return `Basic Card\n  ID: ${card.id}\n  Front: '${card.front}'\n  Back: '${card.back}'`;
 }
 
 function renderClozeCard(card: ClozeCard): string {
-  return `Cloze Card (ID: ${card.id})\nText: '${card.text}'`;
+  return `Cloze Card\n  ID: ${card.id}\n  Text: '${card.text}'`;
+}
+
+export function renderPaginationData(
+  pagination: PaginationMeta,
+  label: string
+): string {
+  return `[Paginated result for ${label}: page ${pagination.current_page} of ${pagination.total_pages} (total items: ${pagination.total_count})]`;
 }

@@ -1,7 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { CreateCardInput, CreateMultipleCardsInput } from "../models/api.js";
+import { CreateMultipleCardsInput } from "../models/api.js";
 import { Card } from "../models/models.js";
+import { CreateCardSchema, DeckIdSchema } from "./schema.js";
 import { OwlClient } from "../owl-client.js";
 import { err, text } from "./content.js";
 
@@ -13,42 +14,26 @@ export async function setupCreateCardsTool(
     "create-cards",
     "Create multiple cards in a specific deck",
     {
-      deck_id: z.string().describe("The ID of the deck to add the cards to"),
-      cards: z
-        .array(
-          z.object({
-            type: z
-              .enum(["BasicCard", "ClozeCard"])
-              .describe("The type of card to create"),
-            front: z
-              .string()
-              .optional()
-              .describe("The front text for a basic card"),
-            back: z
-              .string()
-              .optional()
-              .describe("The back text for a basic card"),
-            text: z.string().optional().describe("The text for a cloze card"),
-          })
-        )
-        .describe("Array of cards to create"),
+      deck_id: DeckIdSchema,
+      cards: z.array(CreateCardSchema).describe("Array of cards to create"),
     },
     async ({ deck_id, cards }) => {
       const cardsInput: CreateMultipleCardsInput = { deck_id, cards };
+      try {
+        const cardsData = await client.makeRequest<Card[]>(
+          `/decks/${deck_id}/cards/batch`,
+          {
+            method: "POST",
+            body: cardsInput,
+          }
+        );
 
-      const cardsData = await client.makeRequest<Card[]>(
-        `/decks/${deck_id}/cards/batch`,
-        "POST",
-        cardsInput
-      );
-
-      if (!cardsData) {
-        return err(`Failed to create cards in deck ${deck_id}.`);
+        return text(
+          `Successfully created ${cardsData.length} cards in deck ${deck_id}.`
+        );
+      } catch (error) {
+        return err(error, `Create cards in deck ${deck_id}`);
       }
-
-      return text(
-        `Successfully created ${cardsData.length} cards in deck ${deck_id}.`
-      );
     }
   );
 }

@@ -1,24 +1,29 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { PaginatedResult } from "../models/api.js";
 import { Deck } from "../models/models.js";
-import { renderDeckList } from "../models/render.js";
+import { renderDeckList, renderPaginationData } from "../models/render.js";
+import { CursorSchema } from "./schema.js";
 import { OwlClient } from "../owl-client.js";
-import { err, text } from "./content.js";
+import { err, texts as multiText } from "./content.js";
 
 export function setupGetDecksTool(client: OwlClient, server: McpServer) {
   server.tool(
     "get-decks",
-    "Get a list of decks from the user's account",
-    {},
-    async () => {
-      const decksPage = await client.makeRequest<PaginatedResult<Deck>>(
-        `/decks`
-      );
-      if (!decksPage) {
-        return err("Failed to retrieve decks from the user's account.");
-      }
+    "Get a page of decks from the user's account.",
+    CursorSchema.shape,
+    async (cursor) => {
+      try {
+        const page = await client.makeRequest<PaginatedResult<Deck>>("/decks", {
+          params: { ...cursor },
+        });
 
-      return text(renderDeckList(decksPage.items));
+        return multiText(
+          renderPaginationData(page.pagination, "decks"),
+          renderDeckList(page.items)
+        );
+      } catch (error) {
+        return err(error, `Get decks (cursor: ${cursor})`);
+      }
     }
   );
 }

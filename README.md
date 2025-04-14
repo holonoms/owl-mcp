@@ -28,3 +28,12 @@
    ```
 
 3. Let Claude cook!
+
+## TODO
+
+- Un/Archive card
+- Un/Archive deck
+- Delete card
+- Delete deck
+- Edit deck details
+- Stats

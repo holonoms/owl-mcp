@@ -1,11 +1,16 @@
-import {
-  BasicCard,
-  Card,
-  ClozeCard,
-  Deck,
-  DeckId,
-  GradePreviews,
-} from "./models.js";
+import { BasicCard, ClozeCard, DeckId } from "./models.js";
+
+export interface Cursor {
+  page?: number;
+  per_page?: number;
+  /**
+   * Sorting criteria. Can be a single string or an array of strings
+   * representing model fields.
+   *
+   * For descending order, prefix field with - (e.g. "-created_at")
+   */
+  sort?: string[] | string;
+}
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -39,26 +44,22 @@ export type CreateMultipleCardsInput = {
 
 export type CreateCardInput = CreateBasicCardInput | CreateClozeCardInput;
 
+export interface UpdateBasicCardInput {
+  type?: BasicCard["type"];
+  front?: string;
+  back?: string;
+}
+
+export interface UpdateClozeCardInput {
+  type?: ClozeCard["type"];
+  text?: string;
+}
+
+export type UpdateCardInput = UpdateBasicCardInput | UpdateClozeCardInput;
+
 export interface CreateDeckInput {
   title: string;
   description: string;
   public?: boolean;
   cards?: Array<Omit<CreateCardInput, "deck_id">>;
-}
-
-export interface CreateStudySessionInput {
-  deck_id?: DeckId;
-}
-
-export interface NextStudyCardResponse {
-  card: Card | null;
-  grade_previews: GradePreviews | null;
-  cards_remaining: CardCountsByState;
-}
-
-export interface CardCountsByState {
-  new: number;
-  learning: number;
-  review: number;
-  relearning: number;
 }
