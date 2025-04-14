@@ -1,24 +1,30 @@
 # How to run the Owl MCP server
 
-Keep in mind that this needs an API key. Get one of from Owl first. Then do this:
+> [!IMPORTANT]
+> This MCP server needs to be configured with an API key. Get one from Owl first.
 
-Build the project:
+1. Set the project to auto-build on changes:
 
-```bash
-pnpm run build
-```
+   ```bash
+   pnpm run dev
+   ```
 
-Update your claude desktop configuration. Make sure the args point to the built file, and that Claude can run the node executable.
+2. Update claude desktop configuration:
 
-```json
-{
-  "mcpServers": {
-    "owl": {
-      "command": "node",
-      "args": ["/Users/fred/code/holo/owl/mcp/build/index.js"]
-    }
-  }
-}
-```
+   ```json
+   {
+     "mcpServers": {
+       "owl": {
+         "command": "/path/to/node",
+         "args": ["/path/to/owl-mcp/build/index.js"],
+         "env": {
+           "OWL_API_KEY": "your-api-key-here",
+           "OWL_API_URL": "https://api.owl.cards"
+         },
+         "description": "Study with Owl using Claude"
+       }
+     }
+   }
+   ```
 
-Let Claude cook!
+3. Let Claude cook!
