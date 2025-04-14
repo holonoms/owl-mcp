@@ -3,6 +3,7 @@ import { z } from "zod";
 import { CreateCardInput } from "../models/api.js";
 import { Card } from "../models/models.js";
 import { OwlClient } from "../owl-client.js";
+import { err, text } from "./content.js";
 
 export async function setupCreateCardTool(
   client: OwlClient,
@@ -20,11 +21,11 @@ export async function setupCreateCardTool(
       back: z.string().optional().describe("The back text for a basic card"),
       text: z.string().optional().describe("The text for a cloze card"),
     },
-    async ({ deck_id, type, front, back, text }) => {
+    async ({ deck_id, type, front, back, text: cloze }) => {
       const cardInput: CreateCardInput =
         type === "BasicCard"
           ? { deck_id, type, front: front!, back: back! }
-          : { deck_id, type, text: text! };
+          : { deck_id, type, text: cloze! };
 
       const cardData = await client.makeRequest<Card>(
         `/decks/${deck_id}/cards`,
@@ -33,24 +34,12 @@ export async function setupCreateCardTool(
       );
 
       if (!cardData) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Failed to create card in deck ${deck_id}.`,
-            },
-          ],
-        };
+        return err(`Failed to create card in deck ${deck_id}.`);
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Successfully created ${type} in deck ${deck_id} with ID ${cardData.id}.`,
-          },
-        ],
-      };
+      return text(
+        `Successfully created ${type} in deck ${deck_id} with ID ${cardData.id}.`
+      );
     }
   );
 }

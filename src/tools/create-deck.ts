@@ -3,6 +3,8 @@ import { OwlClient } from "../owl-client.js";
 import { z } from "zod";
 import { CreateDeckInput } from "../models/api.js";
 import { Deck } from "../models/models.js";
+import { text } from "./content.js";
+import { err } from "./content.js";
 
 export async function setupCreateDeckTool(
   client: OwlClient,
@@ -45,24 +47,12 @@ export async function setupCreateDeckTool(
       );
 
       if (!deckData) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Failed to create deck "${title}".`,
-            },
-          ],
-        };
+        return err(`Failed to create deck "${title}".`);
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Successfully created deck "${deckData.title}" with ID ${deckData.id}.`,
-          },
-        ],
-      };
+      return text(
+        `Successfully created deck "${deckData.title}" with ID ${deckData.id}.`
+      );
     }
   );
 }

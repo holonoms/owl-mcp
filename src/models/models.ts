@@ -1,6 +1,6 @@
 export type UserId = string;
-export type DeckId = string;
 
+export type DeckId = string;
 export interface Deck {
   id: DeckId;
   title: string;
@@ -48,3 +48,25 @@ export interface ClozeCard extends BaseCard {
 }
 
 export type Card = BasicCard | ClozeCard;
+
+export type StudySessionId = string;
+export interface StudySessionMeta {
+  id: StudySessionId;
+  created_at: string;
+  finished_at: string | null;
+  card_reviews_count: number;
+  correct_reviews_count: number;
+  deck_id?: DeckId;
+  deck_title?: string;
+}
+
+export interface GradePreviews {
+  again: GradePreview;
+  hard: GradePreview;
+  good: GradePreview;
+  easy: GradePreview;
+}
+
+export interface GradePreview {
+  interval_days: number;
+}

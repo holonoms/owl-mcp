@@ -34,7 +34,7 @@ export class OwlClient {
       return data as T;
     } catch (error) {
       console.error(
-        "Error making request to the Owl API:",
+        `Error making request to the Owl API: ${method} ${uri}`,
         error instanceof Error ? error.message : String(error)
       );
       return null;

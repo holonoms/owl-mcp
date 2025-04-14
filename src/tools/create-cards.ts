@@ -3,6 +3,7 @@ import { z } from "zod";
 import { CreateCardInput, CreateMultipleCardsInput } from "../models/api.js";
 import { Card } from "../models/models.js";
 import { OwlClient } from "../owl-client.js";
+import { err, text } from "./content.js";
 
 export async function setupCreateCardsTool(
   client: OwlClient,
@@ -42,24 +43,12 @@ export async function setupCreateCardsTool(
       );
 
       if (!cardsData) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Failed to create cards in deck ${deck_id}.`,
-            },
-          ],
-        };
+        return err(`Failed to create cards in deck ${deck_id}.`);
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Successfully created ${cardsData.length} cards in deck ${deck_id}.`,
-          },
-        ],
-      };
+      return text(
+        `Successfully created ${cardsData.length} cards in deck ${deck_id}.`
+      );
     }
   );
 }

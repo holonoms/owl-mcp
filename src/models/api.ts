@@ -1,4 +1,23 @@
-import { BasicCard, ClozeCard, Deck, DeckId } from "./models.js";
+import {
+  BasicCard,
+  Card,
+  ClozeCard,
+  Deck,
+  DeckId,
+  GradePreviews,
+} from "./models.js";
+
+export interface PaginatedResult<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  current_page: number;
+  per_page: number;
+  total_pages: number;
+  total_count: number;
+}
 
 export interface CreateBasicCardInput {
   deck_id: DeckId;
@@ -27,12 +46,19 @@ export interface CreateDeckInput {
   cards?: Array<Omit<CreateCardInput, "deck_id">>;
 }
 
-export interface DecksResponse {
-  items: Deck[];
-  pagination: {
-    current_page: number;
-    per_page: number;
-    total_pages: number;
-    total_count: number;
-  };
+export interface CreateStudySessionInput {
+  deck_id?: DeckId;
+}
+
+export interface NextStudyCardResponse {
+  card: Card | null;
+  grade_previews: GradePreviews | null;
+  cards_remaining: CardCountsByState;
+}
+
+export interface CardCountsByState {
+  new: number;
+  learning: number;
+  review: number;
+  relearning: number;
 }

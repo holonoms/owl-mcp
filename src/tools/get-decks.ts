@@ -1,6 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DecksResponse } from "../models/api.js";
+import { PaginatedResult } from "../models/api.js";
+import { Deck } from "../models/models.js";
+import { renderDeckList } from "../models/render.js";
 import { OwlClient } from "../owl-client.js";
+import { err, text } from "./content.js";
 
 export function setupGetDecksTool(client: OwlClient, server: McpServer) {
   server.tool(
@@ -8,34 +11,14 @@ export function setupGetDecksTool(client: OwlClient, server: McpServer) {
     "Get a list of decks from the user's account",
     {},
     async () => {
-      const decksData = await client.makeRequest<DecksResponse>(`/decks`);
-
-      if (!decksData) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Failed to retrieve decks from the user's account.`,
-            },
-          ],
-        };
+      const decksPage = await client.makeRequest<PaginatedResult<Deck>>(
+        `/decks`
+      );
+      if (!decksPage) {
+        return err("Failed to retrieve decks from the user's account.");
       }
 
-      const deckText = decksData.items
-        .map(
-          (deck) =>
-            `${deck.title} (ID: ${deck.id}, ${deck.cards_count} cards, ${deck.completion_percentage}% complete)`
-        )
-        .join("\n");
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: deckText,
-          },
-        ],
-      };
+      return text(renderDeckList(decksPage.items));
     }
   );
 }
