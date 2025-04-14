@@ -33,6 +33,4 @@
 
 - Un/Archive card
 - Un/Archive deck
-- Delete card
-- Delete deck
 - Stats

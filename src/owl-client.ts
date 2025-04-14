@@ -57,6 +57,11 @@ export class OwlClient {
       await throwErrorWithDetails(response);
     }
 
+    // Short-circuit 204 No Content responses to avoid parse error below.
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     const data = await response.json();
     return data as T;
   }
