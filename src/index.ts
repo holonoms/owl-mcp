@@ -5,6 +5,7 @@ import { OwlClient } from "./owl-client.js";
 import { setupCreateCardTool } from "./tools/create-card.js";
 import { setupCreateCardsTool } from "./tools/create-cards.js";
 import { setupCreateDeckTool } from "./tools/create-deck.js";
+import { setupEditCardTool } from "./tools/edit-card.js";
 import { setupGetDeckCardsTool } from "./tools/get-deck-cards.js";
 import { setupGetDecksTool } from "./tools/get-decks.js";
 import { setupStartStudySessionTool } from "./tools/start-study-session.js";
@@ -36,6 +37,7 @@ async function main() {
   setupCreateCardsTool(client, server);
   setupStartStudySessionTool(client, server);
   setupSubmitCardReviewTool(client, server);
+  setupEditCardTool(client, server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
