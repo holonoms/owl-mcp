@@ -14,6 +14,9 @@ Model Context Protocol (MCP) is an open protocol that allows you to provide cust
 
 By using this MCP server, you can integrate Owl with MCP clients like Claude Desktop, Cursor, etc. You can then have your language model act on your behalf, to do things like create decks and cards for you, etc. Here's an example:
 
+[![Watch the video](https://github.com/user-attachments/assets/89f6b03e-6e13-4e76-96ed-ac0fe166eaa9)](https://owl.cards/videos/mcp.mov)
+
+
 ## Getting started
 
 > [!IMPORTANT]
